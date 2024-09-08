@@ -12,7 +12,7 @@ async function main() {
   grpcClient.addMetadata({ "x-api-key": "azertyuiop" });
   const req = new AddRequest().setA(1).setB(1);
   const res = await grpcClient.request("add", req);
-  grpcClient.end();
+  grpcClient.close();
 
   console.log(res);
 }

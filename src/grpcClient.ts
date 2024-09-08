@@ -10,8 +10,13 @@ export default class GrpcClient<T extends new (...args: any[]) => any> {
   }
 
   /**
+   *
    * Adds metadata to the gRPC client.
    * @param metadataObj An object containing metadata key-value pairs.
+   * @returns void
+   * @example
+   * grpcClient.addMetadata({ "my-key": "my-value" });
+   *
    */
   addMetadata(metadataObj: Record<string, string>) {
     Object.entries(metadataObj).forEach(([key, value]) => {
@@ -33,7 +38,9 @@ export default class GrpcClient<T extends new (...args: any[]) => any> {
     console.time(`GRPC REQUEST on ${String(method)}`);
     const response = await new Promise<G>((resolve, reject) => {
       if (typeof this.#client[method] !== "function") {
-        return reject(new Error(`Method ${String(method)} does not exist on client`));
+        return reject(
+          new Error(`Method ${String(method)} does not exist on client`)
+        );
       }
 
       (this.#client[method] as any)(
@@ -55,7 +62,13 @@ export default class GrpcClient<T extends new (...args: any[]) => any> {
     return response;
   }
 
-  end() {
+  /**
+   * Closes the gRPC client.
+   * @returns void
+   * @example
+   * grpcClient.close();
+   */
+  close() {
     this.#client.close();
   }
 }
