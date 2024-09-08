@@ -1,36 +1,20 @@
-import { credentials, Metadata } from "@grpc/grpc-js";
-import { CalculatorClient } from "./generated/calculator_grpc_pb";
-import {
-  CalculationRequest,
-  CalculationResponse,
-} from "./generated/calculator_pb";
+import { credentials } from "@grpc/grpc-js";
+import { CalculatorServiceClient } from "../generated/calculator_grpc_pb";
+import { AddRequest } from "../generated/calculator_pb";
+import GrpcClient from "./grpcClient";
 
 async function main() {
-  const client = new CalculatorClient(
-    "localhost:8080",
+  const client = new CalculatorServiceClient(
+    "localhost:4000",
     credentials.createInsecure()
   );
+  const grpcClient = new GrpcClient(client);
+  grpcClient.addMetadata({ "x-api-key": "azertyuiop" });
+  const req = new AddRequest().setA(1).setB(1);
+  const res = await grpcClient.request("add", req);
+  grpcClient.end();
 
-  // set metadata, acting like header
-  const metadata = new Metadata();
-  metadata.set("x-api-key", "azertyuiop");
-
-  // configure request
-  const req = new CalculationRequest().setA(1).setB(1);
-
-  const response = await new Promise((resolve, reject) => {
-    client.add(req, metadata, (error: any, response: CalculationResponse) => {
-      if (error) reject(error);
-      if (response) {
-        resolve(response.toObject());
-      }
-
-      //@ts-ignore
-      client.close();
-    });
-  });
-
-  console.log(response)
+  console.log(res);
 }
 
 main();

@@ -1,18 +1,16 @@
 syntax = "proto3";
 
-package calculator;
+package calculator.v1;
 
-option go_package = "./pb";
-
-service Calculator {
-    rpc Add(CalculationRequest) returns (CalculationResponse);
+service CalculatorService {
+    rpc Add(AddRequest) returns (AddResponse);
 }
 
-message CalculationRequest {
+message AddRequest {
     int64 a = 1;
     int64 b = 2;
 }
 
-message CalculationResponse {
+message AddResponse {
     int64 result = 1;
 }
