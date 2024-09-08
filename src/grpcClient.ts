@@ -1,4 +1,5 @@
 import { Metadata } from "@grpc/grpc-js";
+import * as jspb from "google-protobuf";
 
 export default class GrpcClient<T extends new (...args: any[]) => any> {
   metadata: Metadata;
@@ -30,12 +31,11 @@ export default class GrpcClient<T extends new (...args: any[]) => any> {
    * @param args The arguments to pass to the gRPC method.
    * @returns A promise that resolves with the response from the gRPC method.
    */
-  async request<
-    M extends keyof InstanceType<T>,
-    F extends Parameters<InstanceType<T>[M]>[0],
-    G extends ReturnType<InstanceType<T>[M]>
-  >(method: M, args: F): Promise<G> {
-    console.time(`GRPC REQUEST on ${String(method)}`);
+  async request<F extends jspb.Message, G extends jspb.Message>(
+    method: keyof InstanceType<T>,
+    args: F
+  ): Promise<G> {
+    //console.time(`GRPC REQUEST on ${String(method)}`);
     const response = await new Promise<G>((resolve, reject) => {
       if (typeof this.#client[method] !== "function") {
         return reject(
@@ -51,14 +51,14 @@ export default class GrpcClient<T extends new (...args: any[]) => any> {
             return reject(error);
           }
           if (response) {
-            return resolve(response.toObject());
+            return resolve(response);
           }
           reject(new Error("No response received"));
         }
       );
     });
 
-    console.timeEnd(`GRPC REQUEST on ${String(method)}`);
+    //console.timeEnd(`GRPC REQUEST on ${String(method)}`);
     return response;
   }
 
@@ -68,7 +68,15 @@ export default class GrpcClient<T extends new (...args: any[]) => any> {
    * @example
    * grpcClient.close();
    */
-  close() {
-    this.#client.close();
+  async close() {
+    return await new Promise((resolve, reject) => {
+      try {
+        this.#client.close();
+        resolve(true);
+      } catch (error) {
+        console.error("Error closing client:", error);
+        reject(error);
+      }
+    });
   }
 }
